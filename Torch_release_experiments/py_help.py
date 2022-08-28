@@ -1,5 +1,7 @@
+import re
 import numpy as np
 import json as json_utils
+from sklearn.model_selection import train_test_split
 
 class torch_helper:
     """Common utility class for torch experiments
@@ -16,6 +18,47 @@ class torch_helper:
         """
         with open(filename, mode="r") as data:
             return data.readlines()
+
+
+    def nltk_preprocessor(self, sentence,stopwords=1):
+        """preprocessing the data based on nltk STOPWORDS
+
+        Args:
+            sentence (string): The string or the sentence that is to be passed 
+
+        Returns:
+            sentence (string): The pre proceesed result from the function 
+        """
+
+        sentence = sentence.lower()
+        # get rid of the stop words
+        pt = re.compile(r"\b(" + r"|".join(stopwords) + r")\b\s*")
+        sentence = pt.sub("", sentence)
+        # paranthesis cases 
+        sentence = re.sub(r"\([^)]*\)", "", sentence)
+        # handling the spaces and the filters
+        sentence = re.sub(r"([-;;.,!?<=>])", r" \1", sentence)
+        sentence = re.sub(r"[^A-Za-z0-9]", " ", sentence) # removing all cases for non alpha numeric characters 
+        sentence = re.sub(" +", " ", sentence)
+        sentence = sentence.strip()
+
+        return sentence
+
+    def data_splitter(self, X, y, t_sz):
+        """Splits the dataset into training,testing and validation data 
+
+        Args:
+            X (int),y (int) , t_sz (int) : size of the training dataset 
+
+        Returns : 
+            x_train,y_train,x_val,y_val,x_test,y_test
+        """
+
+        x_train,x_,y_train,y_ = train_test_split(X, y, train_size = t_sz, stratify = y)
+        x_val, x_test, y_val, y_test = train_test_split(x_, y_, train_size = 0.5 , stratify = y_) 
+        return x_train, x_val, x_test, y_train, y_val, y_test
+
+
     
     def pre_processor(self,filename):
         """Returns a dictionary list with all the information regarding each line in the file
@@ -91,7 +134,7 @@ class torch_helper:
                 response.append(self.encoded_classes[key])
             return response
         
-        def lb_decoder(self, targets):
+        def lb_encoder(self, targets):
             """One hot label  encoding  of the target class
 
             Args:
