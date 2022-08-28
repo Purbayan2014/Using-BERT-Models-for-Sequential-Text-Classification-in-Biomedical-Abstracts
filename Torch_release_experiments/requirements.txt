@@ -1,0 +1,9 @@
+transformers=4.21.2
+numpy
+json
+os
+random
+matlplotlib
+seaborn
+nltk
+re
