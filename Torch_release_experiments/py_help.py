@@ -2,6 +2,9 @@ import re
 import numpy as np
 import json as json_utils
 from sklearn.model_selection import train_test_split
+from torch.utils.data import Dataset, DataLoader
+import tensorflow as tf
+import torch
 
 class torch_helper:
     """Common utility class for torch experiments
@@ -9,6 +12,7 @@ class torch_helper:
     
     def __init__(self):
         self.lb_encoder = self.lb_encoder()
+#         self.CustomDataset = self.CustomDataset(text_seq="text_seq", l_num=56, tot_ln=6656, target=451, toknzer=object)
 
     def get_lines(self,filename):
         """Returns the file contents
@@ -18,6 +22,23 @@ class torch_helper:
         """
         with open(filename, mode="r") as data:
             return data.readlines()
+        
+    def last_relavent(self,states,seq_lens):
+        """
+        Gathers last and the relavent data
+        
+        Args:
+            states : Hidden states
+            seq_lens : Sequence length of the data
+            
+        Returns:
+            res (tensor) : A sequence of combined tensors of new dimension
+        """
+        seq_lens = seq_lens.long().detach().cpu().numpy() - 1
+        out = []
+        for batch_index, column_index in enumerate(seq_lens):
+            out.append(states[batch_index, column_index])
+        return torch.stack(out)
 
 
     def nltk_preprocessor(self, sentence,stopwords=1):
@@ -177,5 +198,57 @@ class torch_helper:
         
         def __str__(self):
             return f"<lb_encoder={len(self)}>"
+    
+#     class CustomDataset(Dataset):
+#         """Generates custom tokenized preprocessed dataset
+#         """
+        
+        
+#         def __init__(self, text_seq="text_seq", l_num=56, tot_ln=6656, target=451, toknzer=object):
+#             self.text_seq = text_seq
+#             self.l_num = l_num
+#             self.tot_ln = tot_ln
+#             self.target = target
+#             self.toknzer = toknzer
+            
+#         def collation(self, data):
+#             """Preprocessing on a batch of dataset
+
+#             Args:
+#                 data (ndarray): A batch of dataset in an array format
+#             """
+#             # grabbing the input
+#             data,txt = np.array(data),txt[0]
+#             ln_nums,total_lns,target = data[:,1], data[:,2],data[:,3]
+#             # one hot encoding
+#             ln_nums,total_lns = tf.one_hot(ln_nums, depth=20), tf.one_hot(total_lns, depth=24)
+#             # tokenizing the inputs
+#             toknzed_res = self.toknzer(txt.tolist(), return_tensors='pt', max_length=128, padding='max_length', truncated=True)
+#             ln_nums = torch.tensor(ln_nums.numpy())
+#             total_lns = torch.tensor(total_lns.numpy())
+#             target = torch.LongTensor(target.astype(np.int32))
+            
+#             return toknzed_res,ln_nums,total_lns, target
+        
+#         def create_datald(self, batch_size, shuffle=False,drop_last=False):
+#             dloader = DataLoader(dataset=self, batch_size=batch_size, collate_fn=self.collation, shuffle=shuffle, drop_last=drop_last, pin_memory=True)
+#             return dloader
+        
+#         def __len__(self):
+#             return len(self.target)
+        
+#         def __str__(self) -> str:
+#             return f"<Custom_DataSet(N={len(self.target)})>"
+        
+#         def __getitem__(self, pos):
+#             return [self.text_seq[pos], self.line_nos[pos],self.tot_ln[pos],self.target[pos]]
+            
+            
+            
+            
+            
+        
+        
+           
         
         
