@@ -1,10 +1,14 @@
 import re
 import numpy as np
 import json as json_utils
+from collections import Counter
+from more_itertools import take 
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset, DataLoader
 import tensorflow as tf
 import torch
+import json
+
 
 class torch_helper:
     """Common utility class for torch experiments
@@ -242,6 +246,47 @@ class torch_helper:
         
 #         def __getitem__(self, pos):
 #             return [self.text_seq[pos], self.line_nos[pos],self.tot_ln[pos],self.target[pos]]
+
+    class ct_tokenzr(object):
+        """Generates custom tokens from data sets
+        """
+        def __init__(self, ch_lvl, nos_tkns=None, pad_tkn="<PAD>", oov_tkn="<UNK>", tkn_to_idx=None):
+            """Initialize tokenizer
+
+            Args:
+                ch_lvl (boolean): Enable character level tokenization or not. 
+                nos_tkns (int, optional): Number of tokens . Defaults to None.
+                pad_tkn (str, optional): Custom padding for the tokens . Defaults to "<PAD>".
+                oov_tkn (str, optional): Overriding the value of tokens . Defaults to "<UNK>".
+                tkn_to_idx (int, optional): Number of tokens to be converted to indexes. Defaults to None.
+            """
+            self.ch_lvl = ch_lvl
+            self.sep = "" if self.ch_lvl else " "
+            if nos_tkns: nos_tkns -= 2
+            self.nos_tkns = nos_tkns
+            self.pad_tkn = pad_tkn
+            self.oov_tkn = oov_tkn
+            if not tkn_to_idx: tkn_to_idx = {pad_tkn: 0, oov_tkn: 1}
+            self.tkn_to_idx = tkn_to_idx
+            self.idx_to_tkn = {v: k for k,v, in self.tkn_to_idx.items()}
+        
+        
+            
+        @classmethod
+        def load(cls, filename):
+            """Loads the tokens from the given file
+
+            Args:
+                filename (str): Name of the file to load
+
+            Returns:
+                Keyworded_dictionary (dict) 
+            """
+            with open(filename, "r") as f:
+                kwargs = json.load(filename=filename)
+            return cls(**kwargs)
+                        
+
             
             
             
