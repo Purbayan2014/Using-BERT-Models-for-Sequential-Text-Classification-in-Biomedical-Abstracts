@@ -341,7 +341,7 @@ class torch_helper:
                 idx = len(self)
                 self.tkn_to_idx[tkn] = idx
                 self.idx_to_tkn[idx] =  tkn
-        
+            return self
 
         def seq_txt(self, seq):
             """converts the token sequences to texts
@@ -356,7 +356,7 @@ class torch_helper:
                 t = []
                 for idx in se:
                     t.append(self.idx_to_tkn.get(idx, self.oov_tkn))
-                txt.append(self.sep.join([tk for tk in txt]))
+                txt.append(self.sep.join([tk for tk in t]))
             return txt
         
         def txt_seq(self, txt):
@@ -372,12 +372,12 @@ class torch_helper:
             for t in txt:
                 if not self.ch_lvl:
                     t = t.split(" ")
-                    seq = []
-                    for tkn in t:
-                        seq.append(self.tkn_to_idx.get(
-                            tkn, self.tkn_to_idx[self.oov_tkn]
-                        ))
-                        token_seq.append(np.asarray(seq))
+                seq = []
+                for tkn in t:
+                    seq.append(self.tkn_to_idx.get(
+                        tkn, self.tkn_to_idx[self.oov_tkn]
+                    ))
+                token_seq.append(np.asarray(seq))
             return token_seq
 
         
