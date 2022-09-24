@@ -1,3 +1,4 @@
+from operator import le
 import re
 import numpy as np
 import json as json_utils
@@ -16,6 +17,7 @@ class torch_helper:
     
     def __init__(self):
         self.lb_encoder = self.lb_encoder()
+        self.ct_tokenzr = self.ct_tokenzr()
 #         self.CustomDataset = self.CustomDataset(text_seq="text_seq", l_num=56, tot_ln=6656, target=451, toknzer=object)
 
     def get_lines(self,filename):
@@ -68,6 +70,23 @@ class torch_helper:
         sentence = sentence.strip()
 
         return sentence
+
+    def seq_padder(self,seq, mx_len=0):
+        """
+        Method to specify how much sequence padding is required
+
+        Args:
+            seq  (str) : The sequence to be paddded
+            mx_len (int) :  How much max length to be considered while padding the sequences
+        
+        Returns:
+            pd_seq [list]
+        """
+        mx_len = max(mx_len, max(len(s) for s in seq))
+        pd_seq = np.zeros((len(seq), mx_len))
+        for idx, s in enumerate(seq):
+            pd_seq[idx][:len(s)] = s
+            return pd_seq
 
     def data_splitter(self, X, y, t_sz):
         """Splits the dataset into training,testing and validation data 
@@ -129,7 +148,7 @@ class torch_helper:
                                                 to be encoded along with the nos of items for each class types
             """
             self.target_classes = target_classes
-            self.encoded_classes = {item:index for index, item in enumerate(self.target_classes)}
+            self.encoded_classes = {item:index for index, item in self.target_classes.items()}
             self.total_classes = list(self.target_classes.keys())
             
         
@@ -156,7 +175,7 @@ class torch_helper:
             """
             response = []
             for key, value in  enumerate(targets):
-                response.append(self.encoded_classes[key])
+                response.append(self.encoded_classes[value])
             return response
         
         def lb_encoder(self, targets):
@@ -168,9 +187,9 @@ class torch_helper:
             Returns:
                 encoded_response: encoded class labels
             """
-            encoded_response = np.zeros((len(targets)), dtype=np.int64)
+            encoded_response = np.zeros((len(targets)), dtype=int)
             for key, value in enumerate(targets):
-                encoded_response[key] = self.encoded_classes[value]
+                encoded_response[key] = self.target_classes[value]
             return encoded_response
                 
         def lb_fit(self,targets):
@@ -182,7 +201,7 @@ class torch_helper:
             un_classes = np.unique(targets)
             for key, value_ in enumerate(un_classes):
                 self.target_classes[value_] = key
-            self.encoded_classes = {item:index for index, item in enumerate(self.target_classes)}
+            self.encoded_classes = {item: index for index, item in self.target_classes.items()}
             self.total_classes = list(self.target_classes.keys())
             return self  
                             
@@ -194,14 +213,14 @@ class torch_helper:
                 filename (str): Name of the file
             """
             with open(filename, "w") as data:
-                file_data = {'target_to_respective_encoding' : self.encoded_classes}
+                file_data = {'target_to_respective_encoding' : self.target_classes}
                 json_utils.dump(file_data, filename, indent=4, sort_keys=False)
         
-        def __length__(self):
+        def __len__(self):
             return len(self.target_classes)
         
         def __str__(self):
-            return f"<lb_encoder={len(self)}>"
+            return f"<lb_encoder(nos_classes={len(self)})>"
     
 #     class CustomDataset(Dataset):
 #         """Generates custom tokenized preprocessed dataset
@@ -250,11 +269,11 @@ class torch_helper:
     class ct_tokenzr(object):
         """Generates custom tokens from data sets
         """
-        def __init__(self, ch_lvl, nos_tkns=None, pad_tkn="<PAD>", oov_tkn="<UNK>", tkn_to_idx=None):
+        def __init__(self, ch_lvl=True, nos_tkns=None, pad_tkn="<PAD>", oov_tkn="<UNK>", tkn_to_idx=None):
             """Initialize tokenizer
 
             Args:
-                ch_lvl (boolean): Enable character level tokenization or not. 
+                ch_lvl (boolean, optional): Enable character level tokenization or not. 
                 nos_tkns (int, optional): Number of tokens . Defaults to None.
                 pad_tkn (str, optional): Custom padding for the tokens . Defaults to "<PAD>".
                 oov_tkn (str, optional): Overriding the value of tokens . Defaults to "<UNK>".
@@ -285,7 +304,88 @@ class torch_helper:
             with open(filename, "r") as f:
                 kwargs = json.load(filename=filename)
             return cls(**kwargs)
-                        
+
+        def save(self, filename):
+            """
+            Saves the tokenzied contents into a json dump
+
+            Args:
+                filename (str): Name of the file to load
+            
+            Returns:
+                returns the json dumps
+            """                       
+
+            with open(filename, "w")  as f:
+                data = {
+                    "ch_level" : self.ch_lvl,
+                    "oov_token" : self.oov_tkn,
+                    "tkn_to_index" : self.tkn_to_idx
+                }
+                json.dumps(data, filename, indent=4, sort_keys=False)
+        
+        def txt_fitter(self, txt):
+            """
+            Fits the tokens based on the txt being passed
+
+            Args:
+                txt (str) : The actual text being passed
+            
+            """
+            if not self.ch_lvl:
+                txt = [t.split(" ") for t in txt]
+            all_tkns = [tkn for t in txt for tkn in t]
+            cnts = Counter(all_tkns).most_common(self.nos_tkns)
+            self.min_tkn_frq = cnts[-1][1]
+            for tkn, cn in cnts:
+                idx = len(self)
+                self.tkn_to_idx[tkn] = idx
+                self.idx_to_tkn[idx] =  tkn
+        
+
+        def seq_txt(self, seq):
+            """converts the token sequences to texts
+            Args:
+                seq (str) : The textual sequences
+            
+            Returns: 
+                Text (list)
+            """
+            txt = []
+            for se in seq:
+                t = []
+                for idx in se:
+                    t.append(self.idx_to_tkn.get(idx, self.oov_tkn))
+                txt.append(self.sep.join([tk for tk in txt]))
+            return txt
+        
+        def txt_seq(self, txt):
+            """Converts the texts to token sequences
+            
+            Args:
+                txt (str) : The textual sequences
+            
+            Returns:
+            token_seq (list)
+            """
+            token_seq = []
+            for t in txt:
+                if not self.ch_lvl:
+                    t = t.split(" ")
+                    seq = []
+                    for tkn in t:
+                        seq.append(self.tkn_to_idx.get(
+                            tkn, self.tkn_to_idx[self.oov_tkn]
+                        ))
+                        token_seq.append(np.asarray(seq))
+            return token_seq
+
+        
+        def __len__(self):
+            return len(self.tkn_to_idx)
+
+        def __str__(self) -> str:
+            return f"<ct_tokenzr(nos_tokens={len(self)})>"
 
             
             
