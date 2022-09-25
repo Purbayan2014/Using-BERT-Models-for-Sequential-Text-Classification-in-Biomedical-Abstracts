@@ -1,7 +1,7 @@
 import torch 
 import torch.nn as nn
 import torch.optim as optim 
-import torch.functional as F
+import torch.nn.functional as F
 from transformers import DistilBertModel, DistilBertTokenizerFast, AdamW,BertModel,BertTokenizerFast
 
 
@@ -20,7 +20,7 @@ class CustomBertModel(nn.Module):
 		self.classification = nn.Linear(128, classes)
 		self.dropout = nn.Dropout(0.3)
 
-	def forward_fn(self,inputs, line_nos, total_lns):
+	def forward(self,inputs, line_nos, total_lns):
 		model_output = self.model(**inputs)
 		layer1 = model_output['pooler_output']
 

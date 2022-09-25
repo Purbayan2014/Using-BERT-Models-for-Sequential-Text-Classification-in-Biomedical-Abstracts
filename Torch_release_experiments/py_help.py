@@ -31,7 +31,8 @@ class torch_helper:
         
     def last_relavent(self,states,seq_lens):
         """
-        Gathers last and the relavent data
+        Gathers last and the relavent data from the hidden states based on the
+        sequence length provded
         
         Args:
             states : Hidden states
@@ -86,7 +87,7 @@ class torch_helper:
         pd_seq = np.zeros((len(seq), mx_len))
         for idx, s in enumerate(seq):
             pd_seq[idx][:len(s)] = s
-            return pd_seq
+        return pd_seq
 
     def data_splitter(self, X, y, t_sz):
         """Splits the dataset into training,testing and validation data 
@@ -269,7 +270,7 @@ class torch_helper:
     class ct_tokenzr(object):
         """Generates custom tokens from data sets
         """
-        def __init__(self, ch_lvl=True, nos_tkns=None, pad_tkn="<PAD>", oov_tkn="<UNK>", tkn_to_idx=None):
+        def __init__(self, ch_lvl=True, nos_tkns=0, pad_tkn="<PAD>", oov_tkn="<UNK>", tkn_to_idx=None):
             """Initialize tokenizer
 
             Args:

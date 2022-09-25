@@ -184,7 +184,7 @@ class tc_baseline(object):
         Returns : 
             training_accuracy 
         """
-        pred_class = torch.softmax(pred, dim=1).argmax(dim=1)
+        pred_class = torch.softmax(preds, dim=1).argmax(dim=1)
         training_accuray = (pred_class == target_labels).sum().item()/len(preds)
         return training_accuray
 
