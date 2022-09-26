@@ -1,8 +1,7 @@
 from json import load
 import re
 import numpy as np
-from tqdm import tqdm
-from symbol import flow_stmt
+from tqdm.notebook import tqdm
 import torch 
 import torch.nn as nn
 import torch.optim as optim
@@ -15,7 +14,7 @@ class tc_baseline(object):
     First Baseline Model of torch/release branch
     """
 
-    def __init__(self, model, device, loss_func, optimizer,scheduler, dump_path) -> None:
+    def __init__(self, model, device, loss_func=None, optimizer=None,scheduler=None, dump_path=None):
         self.model = model
         self.device = device 
         self.loss_func = loss_func
@@ -77,7 +76,7 @@ class tc_baseline(object):
             print(f"<----------------------Training in EPOCH: {ep+1} ------------------------>")
             vc_arch(f"<----------------------Training in EPOCH: {ep+1} ------------------------>")
             training_loss , training_accuracy = self.training_architecture(dloader = train_dl)
-            validation_loss , validation_accuracy = self.evaluation_architecture(dloader = val_dl)
+            validation_loss , validation_accuracy, _, _ = self.evaluation_architecture(dloader = val_dl)
             self.scheduler.step(validation_loss)
 
             # implementation of the early stopping in torch models
@@ -127,7 +126,7 @@ class tc_baseline(object):
         true_values , predicted_values = [], []
 
         # iteration over the validation batches
-        with torch.inference_model():
+        with torch.inference_mode():
             for idx , btch in tqdm(enumerate(dloader), total=len(dloader)):
 
                 # setting up a common device architecture
@@ -161,7 +160,7 @@ class tc_baseline(object):
         predicted_vals = []
 
         # iteration over the validation batches 
-        with torch.inference_model():
+        with torch.inference_mode():
             for idx, btch in tqdm(enumerate(dloader),  total=len(dloader)):
 
                 # forward propagation with inputs 
@@ -185,7 +184,7 @@ class tc_baseline(object):
         Returns : 
             training_accuracy 
         """
-        pred_class = torch.softmax(pred, dim=1).argmax(dim=1)
+        pred_class = torch.softmax(preds, dim=1).argmax(dim=1)
         training_accuray = (pred_class == target_labels).sum().item()/len(preds)
         return training_accuray
 
