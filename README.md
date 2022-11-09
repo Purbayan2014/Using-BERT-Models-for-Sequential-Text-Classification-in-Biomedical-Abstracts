@@ -1,1 +1,1 @@
-# Joint-Sentence-Classification-by-Neural-Networks
+# Sequential-text-classification-using-deep-sequence-modelling
