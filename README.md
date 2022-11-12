@@ -49,6 +49,13 @@
  
  ` [PhysicalDevice(name='/physical_device:GPU:0', device_type='GPU')] `
 
+ ## Pytorch Cuda Visible device Issue
+ 
+`CUDA initialization: CUDA unknown error - this may be due to an incorrectly set up environment, e.g. changing env variable CUDA_VISIBLE_DEVICES after program start` 
+
+`sudo rmmod nvidia_uvm`
+
+`sudo rmmod nvidia_uvm`
  
  ## Nvidia-NUMA node connection Issue
   
