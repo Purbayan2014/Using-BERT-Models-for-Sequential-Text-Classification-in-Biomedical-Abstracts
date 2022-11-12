@@ -16,6 +16,26 @@
 
 ` sudo apt-get install -y nvhpc-22-9`
 
+  ### For Tensorflow 2.x
+
+` python3 `
+
+` import tensorflow as tf `
+
+` config = tf.compat.v1.ConfigProto() `
+
+` config.gpu_options.allow_growth = True `
+
+` session = tf.compat.v1.Session(config=config) `
+
+  ### For Tensorflow 1.x
+
+` config = tf.ConfigProto() `
+
+` config.gpu_options.allow_growth = True`
+
+` session = tf.Session(config=config....) `
+
   ## Nvidia-NUMA node connection Issue
   
 Non-uniform memory access (NUMA) systems are server platforms with more than one system bus. These platforms can utilize multiple processors on a single motherboard, and all processors can access all the memory on the board. When a processor accesses memory that does not lie within its own node (remote memory), data must be transferred over the NUMA connection at a rate that is slower than it would be when accessing local memory. Thus, memory access times are not uniform and depend on the location (proximity) of the memory and the node from which it is accessed.
