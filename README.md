@@ -36,7 +36,21 @@
 
 ` session = tf.Session(config=config....) `
 
-  ## Nvidia-NUMA node connection Issue
+ ## Cuda CUL-INT Secure Boot Issue
+ 
+ ![image](https://user-images.githubusercontent.com/90950629/201479842-f52b3f25-8af6-423f-9944-0f343cffb590.png)
+ 
+ Install the appropriate BIOS version\
+ Disable Secure Boot in BIOS settings
+ 
+ ` import tensorflow as tf `
+ 
+ ` tf.config.list_physical_devices("GPU") `
+ 
+ ` [PhysicalDevice(name='/physical_device:GPU:0', device_type='GPU')] `
+
+ 
+ ## Nvidia-NUMA node connection Issue
   
 Non-uniform memory access (NUMA) systems are server platforms with more than one system bus. These platforms can utilize multiple processors on a single motherboard, and all processors can access all the memory on the board. When a processor accesses memory that does not lie within its own node (remote memory), data must be transferred over the NUMA connection at a rate that is slower than it would be when accessing local memory. Thus, memory access times are not uniform and depend on the location (proximity) of the memory and the node from which it is accessed.
 
