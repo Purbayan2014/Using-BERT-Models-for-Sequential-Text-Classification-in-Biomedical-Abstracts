@@ -3,9 +3,7 @@
 # Troubleshooting
   
   ## LibCublas Issue
-  
-https://user-images.githubusercontent.com/90950629/201478202-4f355582-c7b4-4251-83e7-5a4f878a188c.mp4
-
+  ![nvidia-cublas](https://user-images.githubusercontent.com/90950629/201479338-6f5f39f0-54cb-4c4d-aa40-ba72e493ef25.gif)
 
 ![image](https://user-images.githubusercontent.com/90950629/201478338-b652984c-369c-42f2-8b97-d50e6aec4f94.png)
 
