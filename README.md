@@ -33,7 +33,7 @@ Non-uniform memory access (NUMA) systems are server platforms with more than one
  ## Nvidia Cuda Libraries Missing
  
  Install the approprita Cudatoolkit and CudaDNN from [Nvidia Official Site](https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04) or using conda as below \
- `conda install -c conda-forge cudnn=8.1.0 cudatoolkit=11.7`\
+ `conda install -c conda-forge cudnn=8.1.0 cudatoolkit=11.7` 
  
  Export the libraries into your current enviornment\
  `export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/`
