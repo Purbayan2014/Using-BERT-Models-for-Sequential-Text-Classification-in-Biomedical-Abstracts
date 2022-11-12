@@ -8,13 +8,13 @@
 ![image](https://user-images.githubusercontent.com/90950629/201478338-b652984c-369c-42f2-8b97-d50e6aec4f94.png)
 
 
-` curl https://developer.download.nvidia.com/hpc-sdk/ubuntu/DEB-GPG-KEY-NVIDIA-HPC-SDK | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-hpcsdk-archive-keyring.gpg `\
+` curl https://developer.download.nvidia.com/hpc-sdk/ubuntu/DEB-GPG-KEY-NVIDIA-HPC-SDK | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-hpcsdk-archive-keyring.gpg `
 
-` echo 'deb [signed-by=/usr/share/keyrings/nvidia-hpcsdk-archive-keyring.gpg] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | sudo tee /etc/apt/sources.list.d/nvhpc.list`\
+` echo 'deb [signed-by=/usr/share/keyrings/nvidia-hpcsdk-archive-keyring.gpg] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | sudo tee /etc/apt/sources.list.d/nvhpc.list`
 
-` sudo apt-get update -y`\
+` sudo apt-get update -y`
 
-` sudo apt-get install -y nvhpc-22-9`\
+` sudo apt-get install -y nvhpc-22-9`
 
   ## Nvidia-NUMA node connection Issue
   
