@@ -15,6 +15,11 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
+from py_help import torch_helper
+from sklearn.metrics import precision_recall_fscore_support
+import zipfile
+# from py_help import create_tensorboard_callback, plot_loss_curves, pred_and_plot, unzip_data, walk_through_dir
+
 
 nltk.download("stopwords")
 STOPWORDS = stopwords.words("english")
@@ -27,6 +32,7 @@ class TC_UTILS(object):
         self.TRAIN_SIZE = 0.7
         self.VAL_SIZE = 0.20
         self.TEST_SIZE = 0.10
+        self.torch_helper = torch_helper()
 
     def render_lines(self,file):
         with open(file, "r") as fl:
@@ -111,9 +117,8 @@ class TC_UTILS(object):
         """
         Method to specify how much sequence padding is required
         Args:
-            seq  (str) : The sequence to be paddded
-            mx_len (int) :  How much max length to be considered while padding the sequences
-        
+            seq  (str) : The sequence to be padded
+            mx_len (int) :  How much max length to considered
         Returns:
             pd_seq [list]
         """
@@ -141,6 +146,89 @@ class TC_UTILS(object):
         for batch_index, column_index in enumerate(seq_lens):
             out.append(hd_states[batch_index, column_index])
         return torch.stack(out)
+    
+    def unzipper(self, filename):
+        """
+        Method used to unzips filename into the current working directory.
+        Args:
+        filename (str): a filepath to a target zip folder to be unzipped.
+        """
+        zip_ref = zipfile.ZipFile(filename, "r")
+        zip_ref.extractall()
+        zip_ref.close()
+
+
+    def load_embeddings_glove(self, filename):
+        """Load embeddings from a file.
+        
+        Args:
+             filename (str) : The name of the glove emb file 
+
+        Returns
+        
+        embeddings (dict) :: Returns a dictionary containing embeddings
+
+        """
+        embeddings = {}
+        with open(filename, "r") as fp:
+            for index, line in enumerate(fp):
+                val = line.split()
+                word = val[0]
+                emb = np.asarray(val[1:], dtype='float32')
+                embeddings[word] = emb
+        return embeddings
+
+    def embedding_mtrx_architecture(self, embeddings, wrd_idx, emb_dm):
+        """Create embeddings matrix to use in emb layer.
+        
+        Args:
+            embeddings (emb_object)
+            wrd_idx (int) : Word index 
+            emb_dm (int) : dimensions for the embeddings
+        """
+        res_matrx = np.zeros((len(wrd_idx), emb_dm))
+        for word, i in wrd_idx.items():
+            emb_vec = embeddings.get(word)
+            if emb_vec is not None:
+                res_matrx[i] = emb_vec
+        return res_matrx
+
+
+    def metrics_evaluater(self, y_true, y_pred, classes):
+        """Method used to return the performance metrics for each class 
+        
+        Args:
+
+            y_true - True values of the dataset
+            y_pred - Predicted values of the dataset
+            classes - All class labels to be predicted
+
+        Returns
+
+            performance (dict) - Returns the dictionary containing the performance metrics of each class
+        
+        """
+        # Performance metrics for the entire class label
+        performance = {"overall": {}, "class": {}}
+
+        # Overall performance of the model
+        metrics = precision_recall_fscore_support(y_true, y_pred, average="weighted")
+        performance["overall"]["precision"] = metrics[0]
+        performance["overall"]["recall"] = metrics[1]
+        performance["overall"]["f1"] = metrics[2]
+        performance["overall"]["num_samples"] = np.float64(len(y_true))
+
+        # Performance metrics for each classes
+        metrics = precision_recall_fscore_support(y_true, y_pred, average=None)
+        for i in range(len(classes)):
+            performance["class"][classes[i]] = {
+                "precision": metrics[0][i],
+                "recall": metrics[1][i],
+                "f1": metrics[2][i],
+                "num_samples": np.float64(metrics[3][i]),
+            }
+
+        return performance
 
 
 

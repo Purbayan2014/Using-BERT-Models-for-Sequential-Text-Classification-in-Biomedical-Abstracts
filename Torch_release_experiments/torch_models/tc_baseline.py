@@ -86,7 +86,11 @@ class tc_baseline(object):
                 appt_val_loss =  validation_loss
                 appt_model = self.model
                 if self.dump_path is not None:
+                    vc_arch(f"Dumping the model into the system in {self.dump_path}")
+                    vc_arch(f"Please wait the model is being saved for epoch {ep}")
                     print(f'Dumping the model into the system in {self.dump_path}')
+                    print(f"Please wait the model is being saved for epoch {ep}")
+                    torch.save(self.model.state_dict(), self.dump_path)
                      # reseting the patience 
                     _patience = patience
             else:

@@ -10,23 +10,6 @@ from torch.utils.data import Dataset, DataLoader
 from Utility.voice_engine import vc_arch
 from torch_utils.tc_utils import TC_UTILS
 
-def last_relevant(hd_states, seq_lens):
-    """
-    Gathers last and the relavent data from the hidden states based on the
-    sequence length provded
-    
-    Args:
-        states : Hidden states
-        seq_lens : Sequence length of the data
-        
-    Returns:
-        res (tensor) : A sequence of combined tensors of new dimension
-    """
-    seq_lens = seq_lens.long().detach().cpu().numpy() - 1
-    out = []
-    for batch_index, column_index in enumerate(seq_lens):
-        out.append(hd_states[batch_index, column_index])
-    return torch.stack(out)
 
 class Model1(nn.Module):
     """Torch LSTM model with embeddings
