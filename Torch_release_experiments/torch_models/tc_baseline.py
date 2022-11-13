@@ -1,13 +1,14 @@
 from json import load
-import re
+# import re
 import numpy as np
 from tqdm.notebook import tqdm
 import torch 
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
-from torch.utils.data import Dataset, DataLoader
+# from torch.utils.data import Dataset, DataLoader
 from Utility.voice_engine import vc_arch
+# from torch_utils.tc_utils import TC_UTILS
 
 class tc_baseline(object):
     """
@@ -21,6 +22,7 @@ class tc_baseline(object):
         self.optimizer =  optimizer
         self.scheduler = scheduler
         self.dump_path = dump_path
+        # self.tc_utils = TC_UTILS()
 
     def training_architecture(self, dloader):
         """The training architecture for the torch baseline model
@@ -84,30 +86,34 @@ class tc_baseline(object):
                 appt_val_loss =  validation_loss
                 appt_model = self.model
                 if self.dump_path is not None:
+                    vc_arch(f"Dumping the model into the system in {self.dump_path}")
+                    vc_arch(f"Please wait the model is being saved for epoch {ep}")
                     print(f'Dumping the model into the system in {self.dump_path}')
+                    print(f"Please wait the model is being saved for epoch {ep}")
+                    torch.save(self.model.state_dict(), self.dump_path)
                      # reseting the patience 
                     _patience = patience
-                else:
-                    _patience -= 1
-                if not _patience:
-                    print("Patience state is zero !!!!! \n\n Stopping early")
-                    vc_arch("Patience state is zero !!!!! \n\n Stopping early")
-                    break
+            else:
+                _patience -= 1
+            if not _patience:
+                print("Patience state is zero !!!!! \n\n Stopping early")
+                vc_arch("Patience state is zero !!!!! \n\n Stopping early")
+                break
 
-                training_accuracy = training_accuracy / len(train_dl)
-                validation_accuracy = validation_accuracy / len(val_dl)
+            training_accuracy = training_accuracy / len(train_dl)
+            validation_accuracy = validation_accuracy / len(val_dl)
 
                 # Logging the parameters
-                print(
-                    f"Training loss : {training_loss:,.3f},\t"
-                    f"Training Accuracy : {training_accuracy:,.3f},\t"
-                    f"Validation loss :  {validation_loss:,.3f}, \t"
-                    f"Validation Accuracy : {validation_accuracy:,.3f}, \t"
-                    f"Learning-rate : {self.optimizer.param_groups[0]['learning-rate']:,.3f}, \t"
-                    f"Patience : {patience}"
-                    "\n"
-                    )
-            return appt_model
+            print(
+                f"Training loss : {training_loss:.3f},\t"
+                f"Training Accuracy : {training_accuracy:.3f},\t"
+                f"Validation loss :  {validation_loss:.3f}, \t"
+                f"Validation Accuracy : {validation_accuracy:.3f}, \t"
+                f"Learning-rate : {self.optimizer.param_groups[0]['lr']:.3E}, \t"
+                f"Patience : {patience}"
+                "\n"
+                )
+        return appt_model
         
     def evaluation_architecture(self, dloader):
         """
@@ -134,7 +140,7 @@ class tc_baseline(object):
                 x, y_true  = btch[:-1], btch[-1]
                 # forward propagation 
                 fwd = self.model(x)
-                loss_fn = self.loss_func(fwd)
+                loss_fn = self.loss_func(fwd, y_true).item()
                 # metrics 
                 loss += (loss_fn - loss) / (idx + 1)
                 accuracy += self.cal_acc(fwd, y_true)
