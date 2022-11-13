@@ -8,14 +8,32 @@ import torch.optim as optim
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from Utility.voice_engine import vc_arch
-from py_help import torch_helper as tc_helper
+from torch_utils.tc_utils import TC_UTILS
+
+def last_relevant(hd_states, seq_lens):
+    """
+    Gathers last and the relavent data from the hidden states based on the
+    sequence length provded
+    
+    Args:
+        states : Hidden states
+        seq_lens : Sequence length of the data
+        
+    Returns:
+        res (tensor) : A sequence of combined tensors of new dimension
+    """
+    seq_lens = seq_lens.long().detach().cpu().numpy() - 1
+    out = []
+    for batch_index, column_index in enumerate(seq_lens):
+        out.append(hd_states[batch_index, column_index])
+    return torch.stack(out)
 
 class Model1(nn.Module):
     """Torch LSTM model with embeddings
     """
     def __init__(self, voc_size,hd_dim, num_lyrs, ln_output, num_classes, embed_dm, pad_idx = 0):
         super(Model1, self).__init__()
-
+        self.tc_utils = TC_UTILS()
         # embeddings 
         self.embed = nn.Embedding(num_embeddings=voc_size, embedding_dim=embed_dm)
         # LSTM lyrs 
@@ -37,9 +55,9 @@ class Model1(nn.Module):
 
         # outputs from RNN
         res , backward_props = self.lstm(x_inputs)
-        X = tc_helper().last_relavent(states=res, seq_lens=len_sequences)
+        X = self.tc_utils.last_relevant(hd_states=res, seq_lens=len_sequences)
         # forward props results 
-        X = self.fcd1(x)
-        X = self.drop_fn(x)
-        X = self.fcd2(x)
+        X = self.fcd1(X)
+        X = self.drop_fn(X)
+        X = self.fcd2(X)
         return X
