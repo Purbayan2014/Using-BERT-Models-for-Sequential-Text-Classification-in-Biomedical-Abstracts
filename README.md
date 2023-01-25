@@ -77,7 +77,12 @@ Non-uniform memory access (NUMA) systems are server platforms with more than one
  `conda install -c conda-forge cudnn=8.1.0 cudatoolkit=11.7` 
  
  Export the libraries into your current enviornment\
- `export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/`
+ `export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/`\
+ or
+ Automate this process everytime so that it is included everytime a conda env is invoked\
+`mkdir -p $CONDA_PREFIX/etc/conda/activate.d`
+`echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/' > $CONDA_PREFIX/etc/conda/activate.d/env_vars.sh`
+
  
   
 
