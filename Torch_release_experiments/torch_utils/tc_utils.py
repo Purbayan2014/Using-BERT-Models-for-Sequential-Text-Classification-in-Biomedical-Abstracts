@@ -6,11 +6,12 @@ from more_itertools import take
 import collections
 import itertools
 from sklearn.model_selection import train_test_split
-from tqdm.notebook import tqdm 
+from tqdm.notebook import tqdm
 import re
 import numpy as np
 import json
 import torch
+import tensorflow as tf
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
@@ -43,7 +44,7 @@ class TC_UTILS(object):
         Args:
             filename (string): Name of the file
         Returns:
-            A dictionary containing the line number, target , content of the line and the total nos of lines 
+            A dictionary containing the line number, target , content of the line and the total nos of lines
         """
         in_lines = self.render_lines(filename)
         abs_lines = ''
@@ -55,7 +56,7 @@ class TC_UTILS(object):
                 abs_lines = ''
             elif line.isspace():
                 abs_lines_split = abs_lines.splitlines()
-            
+
                 for abs_ln_num, ab_line in enumerate(abs_lines_split):
                     line_resp = {}
                     target_split = ab_line.split('\t')
@@ -64,7 +65,7 @@ class TC_UTILS(object):
                     line_resp['line_number'] = abs_ln_num
                     line_resp['total_lines'] = len(abs_lines_split) - 1
                     abs_samples.append(line_resp)
-            
+
             else:
                 abs_lines += line
 
@@ -74,10 +75,10 @@ class TC_UTILS(object):
         """preprocessing the data based on nltk STOPWORDS
 
         Args:
-            sentence (string): The string or the sentence that is to be passed 
+            sentence (string): The string or the sentence that is to be passed
 
         Returns:
-            sentence (string): The pre proceesed result from the function 
+            sentence (string): The pre proceesed result from the function
         """
         # Lower
         sentence = sentence.lower()
@@ -89,24 +90,24 @@ class TC_UTILS(object):
         # case 1 :: paranthesis cases
         sentence = re.sub(r"\([^)]*\)", "", sentence)
 
-        # case 2 :: spaces and filters 
+        # case 2 :: spaces and filters
         sentence = re.sub(r"([-;;.,!?<=>])", r" \1 ", sentence)
         # case 3 :: non alphanumeric characters
-        sentence = re.sub("[^A-Za-z0-9]+", " ", sentence) 
+        sentence = re.sub("[^A-Za-z0-9]+", " ", sentence)
         # case 4 :: multiple spaces
-        sentence = re.sub(" +", " ", sentence)  
+        sentence = re.sub(" +", " ", sentence)
         sentence = sentence.strip()
 
         print (STOPWORDS[:5])
 
         return sentence
 
-    
+
     def data_splitter(self, X, y, train_size):
-        """Splits the dataset into training,testing and validation data 
+        """Splits the dataset into training,testing and validation data
         Args:
-            X (int),y (int) : size of the training dataset 
-        Returns : 
+            X (int),y (int) : size of the training dataset
+        Returns :
             x_train,y_train,x_val,y_val,x_test,y_test
         """
         X_train, X_, y_train, y_ = train_test_split(X, y, train_size=self.TRAIN_SIZE, stratify=y)
@@ -133,11 +134,11 @@ class TC_UTILS(object):
         """
         Gathers last and the relavent data from the hidden states based on the
         sequence length provded
-        
+
         Args:
             states : Hidden states
             seq_lens : Sequence length of the data
-            
+
         Returns:
             res (tensor) : A sequence of combined tensors of new dimension
         """
@@ -146,7 +147,7 @@ class TC_UTILS(object):
         for batch_index, column_index in enumerate(seq_lens):
             out.append(hd_states[batch_index, column_index])
         return torch.stack(out)
-    
+
     def unzipper(self, filename):
         """
         Method used to unzips filename into the current working directory.
@@ -160,12 +161,12 @@ class TC_UTILS(object):
 
     def load_embeddings_glove(self, filename):
         """Load embeddings from a file.
-        
+
         Args:
-             filename (str) : The name of the glove emb file 
+             filename (str) : The name of the glove emb file
 
         Returns
-        
+
         embeddings (dict) :: Returns a dictionary containing embeddings
 
         """
@@ -180,10 +181,10 @@ class TC_UTILS(object):
 
     def embedding_mtrx_architecture(self, embeddings, wrd_idx, emb_dm):
         """Create embeddings matrix to use in emb layer.
-        
+
         Args:
             embeddings (emb_object)
-            wrd_idx (int) : Word index 
+            wrd_idx (int) : Word index
             emb_dm (int) : dimensions for the embeddings
         """
         res_matrx = np.zeros((len(wrd_idx), emb_dm))
@@ -195,8 +196,8 @@ class TC_UTILS(object):
 
 
     def metrics_evaluater(self, y_true, y_pred, classes):
-        """Method used to return the performance metrics for each class 
-        
+        """Method used to return the performance metrics for each class
+
         Args:
 
             y_true - True values of the dataset
@@ -206,7 +207,7 @@ class TC_UTILS(object):
         Returns
 
             performance (dict) - Returns the dictionary containing the performance metrics of each class
-        
+
         """
         # Performance metrics for the entire class label
         performance = {"overall": {}, "class": {}}
@@ -235,12 +236,12 @@ class TC_UTILS(object):
 
 class lb_encoder(object):
     """Encodes each labels with  a tag label [basically each train labels will be encoded] and generates a json file as a result
-    
+
     """
     def __init__(self, target_classes={}):
         """init function
         Args:
-            target_classes (dict, required): _description_. Defaults to {}, this parameter will take the nos of classes 
+            target_classes (dict, required): _description_. Defaults to {}, this parameter will take the nos of classes
                                             to be encoded along with the nos of items for each class types
         """
         self.target_classes = target_classes
@@ -278,10 +279,10 @@ class lb_encoder(object):
         return encoded
 
     def lb_decode(self, targets):
-        """Decodes the labelled classes 
+        """Decodes the labelled classes
         Args:
             targets (dict): encoded classes to be simplified
-            
+
         Returns:
             response (list) : A list of decoded classes for the encoded labels passed
             """
@@ -291,7 +292,7 @@ class lb_encoder(object):
         return total_classes
 
     def save(self, filename):
-        """Generates json file with label encoding 
+        """Generates json file with label encoding
         Args:
             filename (str): Name of the file
         """
@@ -312,7 +313,7 @@ class ct_tokenizer(object):
                  tkn_to_idx=None):
         """Initialize tokenizer
         Args:
-            ch_lvl (boolean, optional): Enable character level tokenization or not. 
+            ch_lvl (boolean, optional): Enable character level tokenization or not.
             nos_tkns (int, optional): Number of tokens . Defaults to None.
             pad_tkn (str, optional): Custom padding for the tokens . Defaults to "".
             oov_tkn (str, optional): Overriding the value of tokens . Defaults to "".
@@ -340,7 +341,7 @@ class ct_tokenizer(object):
         Fits the tokens based on the txt being passed
         Args:
             txt (str) : The actual text being passed
-        
+
         """
         if not self.ch_lvl:
             texts = [text.split(" ") for text in texts]
@@ -355,10 +356,10 @@ class ct_tokenizer(object):
 
     def txt_seq(self, texts):
         """Converts the texts to token sequences
-        
+
         Args:
             txt (str) : The textual sequences
-        
+
         Returns:
         token_seq (list)
         """
@@ -377,8 +378,8 @@ class ct_tokenizer(object):
         """converts the token sequences to texts
         Args:
             seq (str) : The textual sequences
-        
-        Returns: 
+
+        Returns:
             Text (list)
         """
         texts = []
@@ -394,10 +395,10 @@ class ct_tokenizer(object):
         Saves the tokenzied contents into a json dump
         Args:
             filename (str): Name of the file to load
-        
+
         Returns:
             returns the json dumps
-        """     
+        """
         with open(filename, "w") as filename:
             contents = {
                 "ch_lvl": self.ch_lvl,
@@ -412,7 +413,7 @@ class ct_tokenizer(object):
         Args:
             filename (str): Name of the file to load
         Returns:
-            Keyworded_dictionary (dict) 
+            Keyworded_dictionary (dict)
         """
         with open(filename, "r") as filename:
             kwargs = json.load(fp=filename)
@@ -462,4 +463,67 @@ class CustomDataSetManger(Dataset):
     def create_datald(self, batch_size, shuffle=False, drop_last=False):
         dataloader = DataLoader(dataset=self, batch_size=batch_size, collate_fn=self.collations, shuffle=shuffle, drop_last=drop_last, pin_memory=True)
         return dataloader
+
+class CustomDataSetManger2(Dataset):
+    """Generates custom tokenized preprocessed dataset with positional encoding for Model 3
+    """
+
+    def __init__(self, text_sequences, target_sequences, line_no_OH, total_line_OH):
+        """
+        Args:
+            text_sequences (object): Training Sequences
+            target_sequences (object): Target Sequences
+            line_no_OH (dataframe): Line no from the dataframe for the current sequences
+            total_line_OH(dataframe): Total line from the dataframe for the current sequences
+        """
+        self.tc_utils_class = TC_UTILS()
+        self.text_sequences = text_sequences
+        self.target_sequences = target_sequences
+        self.line_no_OH = line_no_OH
+        self.total_line_OH = total_line_OH
+
+    def __len__(self):
+        return len(self.target_sequences)
+
+    def __str__(self):
+        return f""
+
+    def __getitem__(self, index):
+        x = self.text_sequences[index]
+        y = self.target_sequences[index]
+        line_no = self.line_no_OH[index]
+        total_no = self.total_line_OH[index]
+        return [x, len(x), line_no, total_no, y]
+
+    def collations(self, batch):
+        """Preprocessing on a batch of dataset
+
+        Args:
+            data (ndarray): A batch of dataset in an array format
+        """
+        # getting the inputs
+        batch = np.array(batch)
+        text_seq = batch[:,0]
+        seq_lens = batch[:,1]
+        line_nos = batch[:,2]
+        total_lines = batch[:,3]
+        target = batch[:,4]
+
+        # padding the inputs
+        padded_text_seq = self.tc_utils_class.seq_padder(seq=text_seq)
+        # converting the line no into one hot encoded format
+        line_nos = tf.one_hot(line_nos, depth=31)
+        # converting the total line into one hot encoded format
+        total_lines = tf.one_hot(total_lines, depth=31)
+        # converting the inputs to tensors
+        padded_text_seq = torch.LongTensor(padded_text_seq.astype(np.int32))
+        seq_lens = torch.LongTensor(seq_lens.astype(np.int32))
+        line_nos = torch.tensor(line_nos.numpy())
+        total_lines = torch.tensor(total_lines.numpy())
+        target = torch.LongTensor(target.astype(np.int32))
+
+        return padded_text_seq, seq_lens, line_nos, total_lines, target
+
+    def create_datald(self, batch_size, shuffle=False, drop_last=False):
+        return DataLoader(dataset=self, batch_size=batch_size, collate_fn=self.collations, shuffle=shuffle, drop_last=drop_last, pin_memory=True)
 
