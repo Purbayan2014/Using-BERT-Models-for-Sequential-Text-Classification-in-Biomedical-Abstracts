@@ -1,4 +1,6 @@
-# Sequential-text-classification-using-deep-sequence-modelling
+# Sequential-text-classification-using-deep-sequence-modelling [BrainWave Net]
+
+BrainWave Net is a high performance research Abstract Summarizer web application that is created on various testedNLP deep learning models. This was solely created for the purpose such that research scientists and common folksfrom various fields can get their research abstracts summarized in a very easy to read and understandable format
 
 # Troubleshooting
   
