@@ -3,6 +3,7 @@
 BrainWave Net is a high performance research Abstract Summarizer web application that is created on various testedNLP deep learning models. This was solely created for the purpose such that research scientists and common folksfrom various fields can get their research abstracts summarized in a very easy to read and understandable format
 
 # Demo
+The frontend and the rest api backend code are in private repos if you want to check them out send me a mail to purbayan2014@gmail.com
 https://user-images.githubusercontent.com/90950629/228269197-93a7bf6d-6cd5-4697-9a90-ddc45bff3b23.mp4
 
 # Troubleshooting
